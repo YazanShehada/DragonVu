@@ -1,0 +1,66 @@
+﻿@model DragonVu.Models.ApplicationUser
+
+
+@{
+    ViewData["Title"] = "AddRoles";
+}
+
+
+<div class="d-flex justify-content-center align-items-center mt-5">
+    <div class="card p-4" style=" max-width: 800px; width: 100%;">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show text-center mt-3" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <h2 class="mb-4 text-center">إدارة الصلاحيات</h2>
+        <div class="table-responsive mt-3" >
+            <table class="table table-bordered" >
+                <thead >
+                    <tr>
+                        <th>المستخدم</th>
+                        <th>الصلاحيات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in ViewBag.UsersWithRoles)
+                    {
+                        <tr>
+                            <td class="text-center "dir="ltr">@u.Username</td>
+                            <td class="text-center ">@u.Role</td>
+                        </tr>
+                    }
+                </tbody>
+
+                </table>
+        </div>
+        <form asp-action="AddRoles" method="post">
+            <!-- إدخال UserId -->
+            <div class="mb-3">
+                <label class="form-label">أدخل معرف المستخدم</label>
+                <input type="text" name="Username" class="form-control" required />
+            </div>
+
+            <!-- اختيار الدور -->
+            <div class="mb-3">
+                <label class="form-label">نوع الصلاحية الممنوحة</label>
+                <select name="Role" class="form-select" required>
+                    <option value="">-- اختر من الصلاحيات --</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Editor">Editor</option>
+                    <option value="User">User</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">حفظ</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+   
+}

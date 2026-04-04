@@ -1,0 +1,49 @@
+﻿@model DragonVu.Models.ApplicationUser
+@{
+    ViewData["Title"] = "EditeProfile";
+}
+<style>
+    @@media only screen and (min-width: 992px) 
+    {
+            #mob{
+                min-width : 1024px;
+                 
+            }
+    } 
+</style>
+<div class="container-fluid mt-5 " id="mob">
+    <div class=" d-lg-flex justify-content-center align-items-center mt-lg-5">
+        <distributed-cache>
+            <div class="card p-4 " style="max-width: 800px; width: 100%;" >
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show text-center mt-3" role="alert">
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                <h2 class="mb-4 text-center">تعديل الملف الشخصي</h2>
+                <form asp-action="EditeProfile" method="post">
+                    <!-- إدخال الاسم الكامل -->
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">الاسم الكامل</label>
+                        <input asp-for="Name" type="text" class="form-control" required />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <!-- إدخال البريد الإلكتروني -->
+                    <div class="mb-3">
+                        <label asp-for="UserName" class="form-label">رقم الهاتف</label>
+                        <input asp-for="UserName" class="form-control text-start" required dir="ltr" disabled />
+                        <span asp-validation-for="UserName" class="text-danger"></span>
+                    </div>
+                    <!-- إدخال كلمة المرور الجديدة -->
+                    <button type="submit" class="btn btn-primary w-100">حفظ التغييرات</button>
+                </form>
+                <form asp-area="Identity"
+                      asp-page="/Account/Logout"
+                      method="post">
+                    <button type="submit" class="btn btn-danger w-100 mt-1">تسجيل الخروج</button>
+                </form>
+            </div>
+    </div>
+</div>

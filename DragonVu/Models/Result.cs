@@ -9,11 +9,6 @@ namespace DragonVu.Models
         [Key]
         public int Id { get; set; }
 
-        // المستخدم
-        //    [Required]
-        // public string UserId { get; set; } = null!;
-        //  public ApplicationUser User { get; set; } = null!;
-
         // المادة
         [Required]
         public int SubjectId { get; set; }
@@ -22,6 +17,10 @@ namespace DragonVu.Models
         [Required]
         public string UserId { get; set; } = null!;
         public ApplicationUser User { get; set; } = null!;
+
+        public string Name { get; set; } = null!;
+
+        public string UserName { get; set; } = null!;
 
         // نوع الكويز
         [Required]

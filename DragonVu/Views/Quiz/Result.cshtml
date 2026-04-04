@@ -1,0 +1,29 @@
+﻿@model Result
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height:70vh;">
+
+    <div class="card shadow-lg border-0 text-center p-4" style="max-width:400px; width:100%; border-radius:20px;">
+
+        <div class="card-body">
+
+            <h2 class="mb-3 fw-bold text-success">
+                🎉 Congratulations
+            </h2>
+
+            <p class="text-muted mb-4">
+                نتيجة الاختبار
+            </p>
+
+            <div class="display-4 fw-bold text-primary mb-4">
+                @ViewBag.Score
+            </div>
+
+            <a asp-action="Index" asp-controller="Home" class="btn btn-primary rounded-pill px-4">
+                Back to Home
+            </a>
+
+        </div>
+
+    </div>
+
+</div>

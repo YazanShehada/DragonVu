@@ -1,0 +1,128 @@
+﻿@model Subject
+
+@* @{
+//     ViewData["Title"] = "Subjects";
+// } *@
+
+
+<div class="d-flex justify-content-center align-items-center mt-4">
+    <div class="card p-4" style=" max-width: 800px; width: 100%;">
+        <h2 class="mb-4 text-center">إضافة مادة جديدة</h2>
+        <div class="mb-3">
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th style="background-color:#348ceb">اسم المادة</th>
+                            <th style="background-color:#348ceb">السنة</th>
+                            <th style="background-color:#348ceb">تاريخ الاضافة</th>
+                            <th style="background-color:#348ceb">حذف</th>
+                            <th style="background-color:#348ceb"> تعديل</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var subjects = ViewBag.Subjects as List<DragonVu.Models.Subject>;
+
+                            if (subjects != null && subjects.Any())
+                            {
+                                foreach (var sub in subjects)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@sub.Name</td>
+                                        <td> @sub.Year </td>
+                                        <td> @sub.CreatedAt.ToShortDateString()</td>
+                                        <td>
+                                            <form asp-controller="Management"
+                                                  asp-action="DeleteSubject"
+                                                  asp-route-id="@sub.Id"
+                                                  method="post"
+                                                  onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
+
+                                                <button type="submit" class="btn btn-danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+
+                                        <td>
+                                            <button class="btn btn-success edit-btn"
+                                                    data-id="@sub.Id"
+                                                    data-name="@sub.Name"
+                                                    data-year="@sub.Year">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="2" class="text-muted">
+                                        لا توجد مواد حالياً
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <form asp-action="AddSubjects" method="post" enctype="multipart/form-data">
+            <input type="hidden" id="SubjectId" />
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label">Subject Name</label>
+                <input asp-for="Name"  type="text" class="form-control" id="Name" name="Name" required />
+                <span asp-validation-for="Name"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Year" class="form-label">Year</label>
+                <input asp-for="Year" type="number" class="form-control" id="Year" name="Year" required />
+                <span asp-validation-for="Year"></span>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">حفظ</button>
+            
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+
+                const id = this.getAttribute('data-id');
+                const name = this.getAttribute('data-name');
+                const year = this.getAttribute('data-year');
+
+                // تعبئة الحقول
+                document.getElementById('SubjectId').value = id;
+                document.getElementById('Name').value = name;
+                document.getElementById('Year').value = year;
+
+                // هنا نضيف name حتى يتم إرساله
+                document.getElementById('SubjectId').setAttribute("name", "Id");
+
+                document.getElementById('submitBtn').textContent = "تعديل";
+            });
+        });
+            function resetForm() {
+            document.getElementById('subjectForm').reset();
+
+            const hidden = document.getElementById('SubjectId');
+
+            hidden.removeAttribute("name"); // إزالة name
+            hidden.value = "";
+
+            document.getElementById('submitBtn').textContent = "حفظ";
+        }
+
+    </script>
+
+}

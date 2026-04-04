@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 
 namespace DragonVu.Models
 {
@@ -14,7 +17,9 @@ namespace DragonVu.Models
         // السنة (1 أو 2 حالياً)
 
         public int Year { get; set; }
+        [ValidateNever]
         public ICollection<Question> questions { get; set; }
+        [ValidateNever]
         public ICollection<Result> results { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

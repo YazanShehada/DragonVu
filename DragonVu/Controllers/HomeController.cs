@@ -1,6 +1,6 @@
-using System.Diagnostics;
 using DragonVu.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace DragonVu.Controllers
 {
@@ -15,10 +15,14 @@ namespace DragonVu.Controllers
 
         public IActionResult Index()
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Quiz");
+            }
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult ContactUs()
         {
             return View();
         }

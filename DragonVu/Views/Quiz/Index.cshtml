@@ -1,0 +1,106 @@
+﻿@{
+    ViewData["Title"] = "الاختبارات";
+}
+
+<div class="container-fluid mt-5 pb-5">
+    <div class="row justify-content-center text-center">
+
+        <!-- بطاقة الاختبار السريع -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">اختبار سريع</h5>
+                    <h5 class="card-title">Quick Quiz</h5>
+                    <p class="card-text display-6">
+                        <i class="bi bi-lightning" style="color:yellow"></i>
+                    </p>
+
+                    @* <a href="@Url.Action("QuickQuiz", "Quiz")" class="btn btn-primary">ابدأ</a> *@
+                    <button id="btnsub" onclick="show(id)" class="btn btn-primary align-items-center" >ابدأ</button>
+                    <div id="choose" class="col" style="display:none;">
+                        <form asp-controller="Quiz" asp-action="QuickQuiz" method="get">
+
+                            <label class="form-label">المادة</label>
+
+                            <select name="subjectId"
+                                    class="form-select mb-2"
+                                    asp-items="ViewBag.Subjects">
+                                <option value="">-- اختر المادة --</option>
+                            </select>
+
+                            <button type="button" id="btncan" onclick="hide()" class="btn btn-danger">
+                                الغاء
+                            </button>
+
+                            <button type="submit" class="btn btn-success">
+                                ابدأ
+                            </button>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة محاكاة الامتحان -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">محاكاة الامتحان</h5>
+                    <h5 class="card-title text-danger">Coming Soon</h5>
+                    <p class="card-text display-6">
+                        <i class="bi bi-hourglass-split" style="color:sandybrown"></i>
+                    </p>
+                    <a href="@Url.Action("", "Quiz")" class="btn btn-primary">ابدأ</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- قسم الإعلانات -->
+    <h3 class="text-center mt-5 mb-4">اكتشف معنا</h3>
+    <div class="row justify-content-center text-center">
+
+        <!-- الإعلان الشخصي -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100 border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Made with love ❤️ by </h5>
+                    <h5 class="card-subtitle mb-2 ">Yazan Sh</h5>
+                    <p class="card-text">
+                        للكورسات و الاعمال و استفساراتكم
+                    </p>
+                    <a href="https://yazan-sh.great-site.net" target="_blank" class="btn btn-outline-primary">زيارة</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- إعلان الفريق -->
+        <div class="col-md-4 mb-4 ">
+            <div class="card shadow-sm h-100 border-success">
+                <div class="card-body">
+                    <h5 class="card-title">انضم إلينا على التلغرام</h5>
+                    <h5 class="card-subtitle mb-2 text-muted">فريق DragonVu</h5>
+                    <p class="card-text">
+                        اطلع على مشاريعنا وخدماتنا.
+                    </p>
+                    <a href="https://t.me/DragonVu" target="_blank" class="btn btn-outline-success">زيارة الفريق</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script>
+    function show(id) {
+           document.getElementById("btnsub").style.display = "none";
+           document.getElementById("choose").style.display = "block";
+       }
+    function hide(id)
+    {
+        document.getElementById("btnsub").style.display = "inline";
+        document.getElementById("choose").style.display = "none";
+    }
+
+</script>

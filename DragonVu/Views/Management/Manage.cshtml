@@ -1,0 +1,82 @@
+﻿
+@{
+    ViewData["Title"] = "القيادة";
+}
+
+
+
+<div class="container-fluid pb-5">
+    <div class="row justify-content-center text-center mt-5">
+
+        <!-- الكارت الأول -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">أسئلة جديدة</h5>
+                    <p class="card-text display-6">@ViewBag.NewQuestions</p>
+                    <a href="@Url.Action("AproveQuestions", "Management")"
+                       class="btn btn-primary btn-sm">عرض</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- الكارت الثاني -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">طلبات حذف</h5>
+                    <p class="card-text display-6">@ViewBag.DeleteRequests</p>
+                    <a href="@Url.Action("DeleteRequests", "Management")"
+                       class="btn btn-danger btn-sm">عرض</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- الكارت الثالث -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">أسئلة معتمدة</h5>
+                    <p class="card-text display-6">@ViewBag.ApprovedQuestions</p>
+                    <a href="@Url.Action("ShowQuestions", "Management")"
+                       class="btn btn-success btn-sm">عرض</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">المواد</h5>
+                    <p class="card-text display-6">@ViewBag.SubjectsCount</p>
+                    <a href="@Url.Action("AddSubjects", "Management")"
+                       class="btn btn-secondary btn-sm">عرض</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">ادارة الصلاحيات </h5>
+                    <p class="card-text display-6">@ViewBag.UsersCount</p>
+                    <a href="@Url.Action("AddRoles", "Management")"
+                       class="btn btn-warning btn-sm">عرض</a>
+            </div>
+        </div>
+    </div>
+
+
+        <!-- الكارت الرابع (في المنتصف تحتهم) -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">الاحصائيات</h5>
+                    <p class="card-text display-6">99</p>
+                    <a href="@Url.Action("StatisticsPage", "Management")"
+                       class="btn btn-info btn-sm">عرض</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

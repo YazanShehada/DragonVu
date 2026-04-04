@@ -1,0 +1,69 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "تسجيل الدخول";
+}
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<style>
+    div {
+        overflow-x: hidden;
+    }
+</style>
+
+@* <h1>@ViewData["Title"]</h1> *@
+<div class="row g-0">
+    <div class="d-flex align-items-center justify-content-center"
+         style="min-height: 70vh;">
+
+        <div class="row w-100 justify-content-center">
+            <div class="col-12 col-md-6 col-lg-4">
+
+    @* <div class="col-md-4"> *@
+        <section>
+            <form id="account" method="post">
+                <h2>تسجيل الدخول</h2>
+                <hr />
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.UserName" class="form-control" placeholder="" />
+                    <label asp-for="Input.UserName">رقم الهاتف</label>
+                    <span asp-validation-for="Input.UserName" class="text-danger"></span>
+                </div>
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.Password" type="password" class="form-control" autocomplete="current-password" placeholder="" />
+                    <label asp-for="Input.Password">كلمة المرور</label>
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+                <div class="checkbox mb-3">
+                    <label asp-for="Input.RememberMe" class="form-label">
+                        <input class="form-check-input" asp-for="Input.RememberMe" />
+                        @Html.DisplayNameFor(m => m.Input.RememberMe)
+                    </label>
+                </div>
+                <div>
+                    <button id="login-submit" type="submit" class="w-100 btn btn-lg btn-primary">تسجيل</button>
+                </div>
+                <hr />
+                <div>
+                    <p>
+                                <a id="forgot-password" asp-page="./ForgotPassword">نسيت كلمة المرور ؟</a>
+                    </p>
+                    <p>
+                        <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">ليس لديك حساب سجل الان</a>
+                    </p>
+                   
+                </div>
+            </form>
+        </section>
+    </div>
+    </div>
+    </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,8 +1,70 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "الرئيسية";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- ===== Hero Section ===== -->
+<section class="hero-section text-center ؤ">
+    <div class="container py-5">
+
+        <h1 class="hero-title mb-3"> تدرّب قبل المعركة الحقيقية ⚔️</h1>
+        <div class="hero-line mx-auto mb-4"></div>
+
+		<p class="hero-subtitle mb-5">
+            DragonVu منصة تدريب أكاديمية تساعد طلاب الجامعة على إتقان المواد من خلال كويزات ومحاكاة امتحانات حقيقية.
+        </p>
+
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary btn-lg px-4">
+                الدخول إلى الخدمات
+            </a>
+            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-secondary btn-lg px-4">
+                حساب جديد +
+            </a>
+        </div>
+
+    </div>
+</section>
+
+<!-- ===== Services Section ===== -->
+<section class="services-section py-5">
+    <div class="container">
+
+        <div class="row g-4">
+
+            <!-- Service 1 -->
+            <div class="col-md-4">
+                <div class="service-card h-100 text-center">
+                    <div class="service-icon mb-3">📖</div>
+                    <h5 class="mb-2">محاكاة حقيقية للامتحان</h5>
+                    <p class="text-muted">
+                        تدرّب في ظروف تحاكي الامتحان الحقيقي قبل الموعد النهائي
+                    </p>
+                </div>
+            </div>
+
+            <!-- Service 2 -->
+            <div class="col-md-4">
+                <div class="service-card h-100 text-center">
+                    <div class="service-icon mb-3">🎓</div>
+                    <h5 class="mb-2">لوحة تحكم الطالب</h5>
+                    <p class="text-muted">
+                        تابع تقدمك ونتائجك وأداءك بسهولة
+                    </p>
+                </div>
+            </div>
+
+            <!-- Service 3 -->
+            <div class="col-md-4">
+                <div class="service-card h-100 text-center">
+                    <div class="service-icon mb-3">📅</div>
+                    <h5 class="mb-2">تنظيم واضح للمواد</h5>
+                    <p class="text-muted">
+                        جميع المواد مرتبة حسب السنة والمحتوى بشكل واضح
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>

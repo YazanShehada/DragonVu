@@ -1,0 +1,301 @@
+﻿ @using static DragonVu.Models.ApplicationUser
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - DragonVu</title>
+
+    <!-- Bootstrap RTL (واحد فقط) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.rtl.min.css" rel="stylesheet" />
+
+    <!-- خط عربي -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <!-- Site CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        .cursor-pointer {
+        cursor: pointer !important;
+        }
+        .sidebar {
+            min-height: calc(100vh - 58px);
+            width: 80px;
+            transition: 0.3s;
+           
+        }
+        .sidebar.expanded{
+            width:300px;
+        }
+        .sidebar .nav-link span , .sidebar .nav-link small {
+            display:none;
+        }
+
+        .sidebar.expanded .nav-link span, .sidebar.expanded .nav-link small {
+            display: inline;
+        }
+
+        .sidebar .nav-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        
+        .sidebar.expanded .nav-link {
+            flex-direction: row;
+            justify-content: flex-start;
+            gap: 10px;
+        }
+
+        .sidebar .sidelink {
+            
+
+
+        
+            justify-content: center !important;
+        
+        }
+
+        #profile{
+            display:none !important;
+        }
+
+        #mobileProfileBtn {
+            display: none !important;
+        }
+        @@media (max-width: 767px) {
+            #mobileProfileBtn {
+                display: flex !important;
+            }
+
+            #mprofile {
+                display: none !important;
+            }
+            .sidebar {
+                position: fixed;
+                bottom: 0;
+                right: 0;
+                width: 100%;
+                height: 60px !important;
+                z-index: 999;
+                min-height: 60px !important;
+  
+    
+            }
+
+            .sidebar .nav {
+                display: flex;
+                flex-direction: row !important;
+                align-items: center;
+                justify-content:space-around;
+                width:100%;
+            }
+
+            .sidebar .nav-link span, .sidebar .nav-link small 
+            {
+                    display:none !important;
+                    
+            }
+
+            .border-top 
+            {
+                border-top: unset !important;
+            }
+           
+
+            .border-bottom {
+                border-bottom: unset !important;
+            }
+
+            #sidebarToggle{
+                display:none !important;
+            }
+
+            .nav .nav-item a.nav-link.active{
+            color:  black !important;
+            background: none;
+            border-bottom: 4px solid black !important;
+            padding-bottom:16px !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-light layout-body ">
+
+    <!-- ===== Navbar ===== -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm ">
+            <div class="container-fluid px-4">
+
+                <!-- Right: Logo & Name -->
+                <div class="d-flex align-items-center gap-2">
+                    <img src="~/images/Dragon.png" alt="Logo" height="40" />
+                    <div class="fw-bold " style="font-size:1.7em;color:#348ceb">
+                        DragonVu
+
+                    </div>
+                </div>
+
+                <!-- Toggle -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Left: Menu -->
+                <div class="collapse navbar-collapse justify-content-end " id="mainNavbar">
+                    <ul class="navbar-nav gap-3 ">
+                        <li class="nav-item">
+                            <a class="nav-link " asp-area="" asp-controller="Home" asp-action="Index">الرئيسية</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">تسجيل الدخول</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">إنشاء حساب</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " asp-area="" asp-controller="Home" asp-action="ContactUs">تواصل معنا</a>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </nav>
+    </header>
+
+    <!-- ===== Sidebar ===== -->
+    <div class="container-fluid p-0" style="min-height:calc(100vh-58px);">
+        <div class=" d-flex" >
+    <aside>
+        <div class="container-fluid p-0 d-flex">
+            <div class="d-flex flex-column bg-body-secondary  sidebar" id="sidebar">
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item active">
+                                <a class="nav-link active py-3 border-bottom rounded-0 cursor-pointer" href="@Url.Action("Index" , "Quiz")">
+                            <i class="bi bi-house"></i>
+                            <span>الصفحة الرئيسية</span>
+                        </a>                     
+                    </li>
+                    <li class="nav-item">
+                                <a class="nav-link  py-3 border-bottom rounded-0 cursor-pointer" data-bs-toggle="tab" data-bs-target="">
+                            <i class="bi bi-backpack"></i>
+                            <span>المواد</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                                <a class="nav-link  py-3 border-bottom rounded-0 cursor-pointer" data-bs-toggle="tab" data-bs-target="" >
+                            <i class="bi bi-clipboard2-data"></i>
+                            <span>لوحة المعلومات</span>
+                        </a>        
+                    </li>
+                    <li class="nav-item" id="mobileProfileBtn">
+                                <a class="nav-link  py-3 border-bottom rounded-0 cursor-pointer" href="@Url.Action("EditeProfile", "Quiz")">
+                                    <i class="bi bi-gear"></i>
+                                    <span>لتجسيل الخروج للهاتف</span>
+                                </a>
+                    </li>
+                    @if (User.IsInRole("Admin") || User.IsInRole("Editor"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link  py-3 border-bottom rounded-0 cursor-pointer" href="@Url.Action("Index", "Management")" @* asp-controller="Management" asp-action="Index" *@>
+                                        <i class="bi bi-person-fill-gear"></i>
+                                        <span>الادارة</span>
+                                    </a>
+                                </li>
+                            }
+                     
+                       <li class="nav-item dropdown dropup" id="profile">
+                        <a class="nav-link btn btn-link p-3 text-black text-decoration-none w-100 "
+                           data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i>
+                            <small class="text-muted">email@mail.com </small>
+
+                        </a>
+                        <ul class="dropdown-menu text-sm-center shadow ">
+                            <li> <a class="dropdown-item">  </a> sign out  </li>
+                            <li> <a class="dropdown-item">  </a> sign out  </li>
+                                    <li>
+                                        <form asp-area="Identity"
+                                              asp-page="/Account/Logout"
+                                              method="post">
+                                            <button type="submit" class="dropdown-item">
+                                                Sign out
+                                            </button>
+                                        </form>
+                                    </li>
+                        </ul>
+                </ul>
+                <div class="mt-auto dropdown dropup " id="mprofile">
+                      <div class="border-top">
+                          <button class="nav-link btn btn-link p-3 text-black text-decoration-none w-100" id="sidebarToggle">
+                            <i class="bi bi-arrows-collapse-vertical"></i>
+                            <span>Collapse</span>
+                          </button>
+                         
+                     </div>
+                    <a class="nav-link btn btn-link p-3 text-black text-decoration-none w-100 " 
+                       data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i>
+                                <small dir="ltr" class="text-muted">@User.Identity.Name</small>
+                        
+                     </a>
+                    <ul class="dropdown-menu text-sm-center shadow ">
+								
+								@* <li>
+                                    <a class="dropdown-item"
+                                       asp-area="Identity"
+                                       asp-page="/Account/Manage/ChangePassword">
+                                        <i class="bi bi-key"></i> تغيير كلمة المرور
+                                    </a>
+                                </li>   *@
+                                <li>
+                                    <a class="dropdown-item"
+                                       href="@Url.Action("EditeProfile", "Quiz")"
+                                        <i class="bi bi-person"></i> الملف الشخصي
+                                    </a>
+                                </li>  
+                                <li>
+                                    <form asp-area="Identity"
+                                          asp-page="/Account/Logout"
+                                          method="post">
+                                        <button type="submit" class="dropdown-item">
+                                            تسجيل خروج
+                                        </button>
+                                    </form>
+                                </li>
+                       
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ===== Main Content ===== -->
+    <main role="main" class=" flex-fill ">
+        @RenderBody()
+    </main>
+    </div>
+    </div>
+    <!-- ===== Footer ===== -->
+    @* <footer class="border-top mt-5 py-3  text-center " style="color:white ; background-color:#348ceb ">
+        © 2026 - DragonVu
+    </footer> *@
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded" , function(){
+            const sidebar = this.getElementById("sidebar")
+            const togglebtn = this.getElementById("sidebarToggle")
+            togglebtn.addEventListener("click" , function(){
+                sidebar.classList.toggle("expanded")
+            })
+        })
+
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

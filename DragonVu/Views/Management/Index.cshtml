@@ -1,0 +1,47 @@
+﻿@{
+    ViewData["Title"] = "Management";
+}
+
+<div class="container-fluid align-items-center">
+    <div class="row justify-content-center  text-center mt-5">
+        <!-- الكارت الأول -->
+        <div class="col-md-4 mb-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">أضف سؤال</h5>
+                    <p class="card-text display-6">
+                        <i class="bi bi-plus-slash-minus"></i>
+                        </p> 
+                    <a href="@Url.Action("AddQuestion", "Quiz")" class="btn btn-success btn-sm"> عرض</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">مساهمتك</h5>
+                    <p class="card-text display-6">
+                        <i class="bi bi-heart " style="color:red"></i>
+                    </p>
+                    <a href="@Url.Action("EditeQuestion", "Quiz")" class="btn btn-primary btn-sm"> عرض</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- الكارت الثاني -->
+        <div class="col-md-4 mb-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">قيادة الاركان</h5>
+                    <p class="card-text display-6">
+                        <i class="bi bi-airplane-engines"></i>
+                    </p> 
+                    <a href="@Url.Action("Manage", "Management")" class="btn btn-danger btn-sm">عرض</a>
+                </div>
+            </div>
+        </div>
+
+       
+    </div>
+</div>

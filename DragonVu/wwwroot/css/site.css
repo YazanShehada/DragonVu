@@ -29,3 +29,110 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+body {
+    font-family: 'Cairo', sans-serif;
+    direction: rtl;
+}
+
+.navbar .nav-link {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+    .navbar .nav-link.active {
+        border-bottom: 2px solid #0f766e;
+        color: #0f766e;
+    }
+    .navbar .nav-link:hover {
+        color: #348ceb;
+    }
+
+.btn-primary {
+    background-color: #348ceb;
+    border-color: #348ceb;
+}
+
+    .btn-primary:hover {
+        background-color: royalblue;
+    }
+
+.btn-outline-secondary {
+    color: black;
+    border-block-color: black;
+    --bs-btn-border-color: black;
+}
+    .btn-outline-secondary:hover {
+        background-color: black;
+    }
+
+/* ===== Hero Section ===== */
+.hero-section {
+    background: linear-gradient(to left, white, #ebf3ff);
+}
+
+
+.hero-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #348ceb;
+}
+
+.hero-line {
+    width: 80px;
+    height: 4px;
+    background-color: black;
+    border-radius: 2px;
+}
+
+.hero-subtitle {
+    max-width: 700px;
+    margin: auto;
+    font-size: 1.2rem;
+    color: #4b5563;
+    font-weight:600;
+}
+
+/* ===== Services ===== */
+.services-section {
+    background-color: #ffffff;
+}
+
+.service-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+}
+
+    .service-card:hover {
+        transform: translateY(-6px);
+    }
+
+.service-icon {
+    width: 60px;
+    height: 60px;
+    background-color: #ddedff;
+    color: #348ceb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin: auto;
+}
+html, body {
+    height: 100%;
+    font-family: 'Cairo', sans-serif;
+}
+
+/* Layout */
+.layout-body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-fill {
+    flex: 1;
+}

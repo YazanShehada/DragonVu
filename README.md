@@ -99,6 +99,4 @@ It is a practical project that highlights your ability to build a complete educa
 
 ---
 
-## License
 
-This project is licensed under the **MIT License**.

@@ -87,8 +87,6 @@ DragonVu demonstrates full-stack web development skills, including:
 * Authentication and user management
 * Version control and project organization
 
-It is a practical project that highlights your ability to build a complete educational system, perfect to showcase in your CV.
-
 ---
 
 ## Future Enhancements

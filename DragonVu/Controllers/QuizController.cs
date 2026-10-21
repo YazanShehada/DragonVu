@@ -1,467 +1,278 @@
-﻿using DragonVu.Data;
+﻿using DragonVu.Application.Features.Profile.Command.UpdateProfile;
+using DragonVu.Application.Features.Questions.Command.AddQuestion;
+using DragonVu.Application.Features.Questions.Command.DeleteQuestion;
+using DragonVu.Application.Features.Questions.Command.UpdateQuestion;
+using DragonVu.Application.Features.Questions.Queries.GetQuestionsForEditing;
+using DragonVu.Application.Features.Quiz.Command.SubmitQuizStep;
+using DragonVu.Application.Features.Quiz.Queries.StartQuickQuiz;
+using DragonVu.Application.Features.Quiz.Responses;
+using DragonVu.Application.Features.Subjects.Queries.GetSubjects;
 using DragonVu.Models;
+using LiteBus.Commands.Abstractions;
+using LiteBus.Queries.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Webp;
-using SixLabors.ImageSharp.Processing;
 
 namespace DragonVu.Controllers
 {
     [Authorize]
     public class QuizController : Controller
     {
-        public QuizController(AppDbContext context,
-                               UserManager<ApplicationUser> userManager
-                              , IWebHostEnvironment env)
+        private readonly ICommandMediator _commandMediator;
+        private readonly IQueryMediator _queryMediator;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public QuizController(
+            ICommandMediator commandMediator,
+            IQueryMediator queryMediator,
+            UserManager<ApplicationUser> userManager)
         {
-            _context = context;
+            _commandMediator = commandMediator;
+            _queryMediator = queryMediator;
             _userManager = userManager;
-            _env = env;
         }
-        readonly AppDbContext _context;
-        readonly UserManager<ApplicationUser> _userManager;
-        private readonly IWebHostEnvironment _env;
-        public IActionResult Index()
+
+        public async Task<IActionResult> Index()
         {
+            var subjects = await _queryMediator.QueryAsync(new GetSubjectsQuery());
 
-            var subjects = _context.subjects.ToList();
+            ViewBag.Subjects = new SelectList(subjects, "Id", "Name");
 
-            ViewBag.Subjects = new SelectList(
-                subjects,
-                "Id",      // value
-                "Name" // text
-
-            );
             return View();
         }
-        [Authorize(Roles = "Admin,Editor")]
-        public IActionResult AddQuestion()
-        {
-            var subjects = _context.subjects.ToList();
 
-            ViewBag.Subjects = new SelectList(
-                subjects,
-                "Id",      // value
-                "Name"     // text
-            );
+        [Authorize(Roles = "Admin,Editor")]
+        public async Task<IActionResult> AddQuestion()
+        {
+            await SetSubjectsViewBagAsync();
 
             return View(new Question());
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Editor")]
         public async Task<IActionResult> AddQuestion(Question question, IFormFile? QuestionImage)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                if (QuestionImage != null && QuestionImage.Length > 0)
-                {
-                    var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-                    var extension = Path.GetExtension(QuestionImage.FileName).ToLower();
-
-                    if (!allowedExtensions.Contains(extension))
-                    {
-                        ModelState.AddModelError("", "Invalid image format");
-                        return View(question);
-                    }
-
-                    // مسار المجلد: uploads/questions/{SubjectId}
-                    string folderPath = Path.Combine(
-                        Directory.GetCurrentDirectory(),
-                        "wwwroot/images/Questions/subjects",
-                        question.SubjectId.ToString()
-                    );
-
-                    if (!Directory.Exists(folderPath))
-                        Directory.CreateDirectory(folderPath);
-
-                    // اسم عشوائي آمن + تحويل لاحقة WebP
-                    string fileName = Guid.NewGuid().ToString() + ".webp";
-                    string filePath = Path.Combine(folderPath, fileName);
-
-                    // ✅ التحويل والضغط باستخدام ImageSharp
-                    using (var image = await Image.LoadAsync(QuestionImage.OpenReadStream()))
-                    {
-                        // Resize إذا أكبر من 1000px
-                        image.Mutate(x => x.Resize(new ResizeOptions
-                        {
-                            Mode = ResizeMode.Max,
-                            Size = new Size(1000, 1000)
-                        }));
-
-                        var encoder = new WebpEncoder
-                        {
-                            Quality = 75 // ضغط مناسب
-                        };
-
-                        await image.SaveAsync(filePath, encoder);
-                    }
-
-                    // المسار الذي يُخزن في قاعدة البيانات
-                    question.ImageUrl = $"images/Questions/subjects/{question.SubjectId}/{fileName}";
-                }
-                else
-                {
-                    //ModelState.AddModelError("", "Image is required");
-                    //return View(question);
-                    question.ImageUrl = "images/default-question.png";
-
-                }
-
-                question.CreatedAt = DateTime.UtcNow;
-                question.CreatedById = _userManager.GetUserId(User);
-
-                if (User.IsInRole("Admin"))
-                {
-                    question.Status = QuestionStatus.Approved;
-                    question.ApprovedAt = DateTime.UtcNow;
-                    question.ApprovedById = _userManager.GetUserId(User);
-                }
-                else if (User.IsInRole("Editor"))
-                {
-                    question.Status = QuestionStatus.PendingAdd;
-                }
-
-                _context.questions.Add(question);
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = User.IsInRole("Admin")
-                    ? "تم إضافة السؤال واعتماده بنجاح ✅"
-                    : "تم إرسال السؤال للمراجعة ⏳";
-
-                return RedirectToAction("AddQuestion");
+                await SetSubjectsViewBagAsync();
+                return View(question);
             }
 
-            return View(question);
+            var result = await _commandMediator.SendAsync(new AddQuestionCommand(
+                question.SubjectId,
+                question.Text,
+                question.AnswerA,
+                question.AnswerB,
+                question.AnswerC,
+                question.AnswerD,
+                question.CorrectAnswer,
+                question.Hint,
+                QuestionImage,
+                _userManager.GetUserId(User)!,
+                User.IsInRole("Admin"),
+                User.IsInRole("Editor")));
+
+            if (!result.Succeeded)
+            {
+                ModelState.AddModelError("", result.Error ?? "Invalid image format");
+                await SetSubjectsViewBagAsync();
+                return View(question);
+            }
+
+            TempData["SuccessMessage"] = User.IsInRole("Admin")
+                ? "تم إضافة السؤال واعتماده بنجاح ✅"
+                : "تم إرسال السؤال للمراجعة ⏳";
+
+            return RedirectToAction("AddQuestion");
         }
 
-        public IActionResult EditeQuestion(int? SubjectId)
+        public async Task<IActionResult> EditeQuestion(int? SubjectId)
         {
-            var subjects = _context.subjects.ToList();
+            await SetSubjectsViewBagAsync(SubjectId);
 
-            ViewBag.Subjects = new SelectList(
-                subjects,
-                "Id",      // value
-                "Name", // text
-                SubjectId
-            );
-            // Fix: Remove incorrect UserManager declaration and get current user id
-            var userId = _userManager.GetUserId(User);
-            var QuestionsById = _context.questions
-                .Where(q => q.CreatedById == userId)
-                ;
+            var questions = await _queryMediator.QueryAsync(
+                new GetQuestionsForEditingQuery(_userManager.GetUserId(User)!, SubjectId));
 
-            if (SubjectId.HasValue)
-            {
-                QuestionsById = QuestionsById.Where(q => q.SubjectId == SubjectId.Value);
-            }
-
-            return View(QuestionsById.ToList());
+            return View(questions);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Editor")]
-
         public async Task<IActionResult> EditQuestion(
-        int Id,
-        int SubjectId,
-        int CorrectAnswer,
-        string? Text,
-        string? AnswerA,
-        string? AnswerB,
-        string? AnswerC,
-        string? AnswerD,
-        string? Hint,
-        IFormFile? QuestionImage)
+            int Id,
+            int SubjectId,
+            int CorrectAnswer,
+            string? Text,
+            string? AnswerA,
+            string? AnswerB,
+            string? AnswerC,
+            string? AnswerD,
+            string? Hint,
+            IFormFile? QuestionImage)
         {
-            var userId = _userManager.GetUserId(User);
+            var result = await _commandMediator.SendAsync(new UpdateQuestionCommand(
+                Id,
+                _userManager.GetUserId(User)!,
+                User.IsInRole("Editor"),
+                SubjectId,
+                CorrectAnswer,
+                Text,
+                AnswerA,
+                AnswerB,
+                AnswerC,
+                AnswerD,
+                Hint,
+                QuestionImage));
 
-            var question = _context.questions
-                .FirstOrDefault(q => q.Id == Id && q.CreatedById == userId);
-
-            if (question == null)
-                return NotFound();
-
-            if (SubjectId != 0)
-                question.SubjectId = SubjectId;
-
-            question.AnswerA = AnswerA;
-            question.AnswerB = AnswerB;
-            question.AnswerC = AnswerC;
-            question.AnswerD = AnswerD;
-            question.CorrectAnswer = CorrectAnswer;
-            question.Hint = Hint;
-            question.Text = Text;
-
-            // ===== تحديث الصورة إذا تم رفع صورة جديدة =====
-            if (QuestionImage != null && QuestionImage.Length > 0)
+            if (result.IsNotFound)
             {
-                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-                var extension = Path.GetExtension(QuestionImage.FileName).ToLower();
-
-                if (!allowedExtensions.Contains(extension))
-                {
-                    ModelState.AddModelError("", "Invalid image format");
-                    return RedirectToAction("EditeQuestion");
-                }
-
-                string folderPath = Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "wwwroot/images/Questions/subjects",
-                    question.SubjectId.ToString()
-                );
-
-                if (!Directory.Exists(folderPath))
-                    Directory.CreateDirectory(folderPath);
-
-                // اسم جديد مع WebP
-                string fileName = Guid.NewGuid().ToString() + ".webp";
-                string filePath = Path.Combine(folderPath, fileName);
-
-                // ✅ تحويل + ضغط + resize
-                using (var image = await Image.LoadAsync(QuestionImage.OpenReadStream()))
-                {
-                    // Resize إذا أكبر من 1000px
-                    image.Mutate(x => x.Resize(new ResizeOptions
-                    {
-                        Mode = ResizeMode.Max,
-                        Size = new Size(1000, 1000)
-                    }));
-
-                    var encoder = new WebpEncoder
-                    {
-                        Quality = 75 // ضغط مناسب
-                    };
-
-                    await image.SaveAsync(filePath, encoder);
-                }
-
-                // حذف الصورة القديمة (احترافي)
-                if (!string.IsNullOrEmpty(question.ImageUrl))
-                {
-                    var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", question.ImageUrl);
-                    if (System.IO.File.Exists(oldPath))
-                        System.IO.File.Delete(oldPath);
-                }
-
-                question.ImageUrl = $"images/Questions/subjects/{question.SubjectId}/{fileName}";
+                return NotFound();
             }
 
-            // ===== لو كان Editor نرجع الحالة للمراجعة =====
-            if (User.IsInRole("Editor"))
-                question.Status = QuestionStatus.PendingAdd;
-
-            await _context.SaveChangesAsync();
+            if (!result.Succeeded)
+            {
+                ModelState.AddModelError("", result.Error ?? "Invalid image format");
+                return RedirectToAction("EditeQuestion");
+            }
 
             TempData["SuccessMessage"] = "تم تعديل السؤال بنجاح ✅";
             TempData["UpdatedQuestionId"] = Id;
 
             return RedirectToAction("EditeQuestion");
         }
+
         public IActionResult DeleteQuestion()
         {
             return RedirectToAction("EditeQuestion");
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Editor")]
-        public IActionResult DeleteQuestion(int Id)
+        public async Task<IActionResult> DeleteQuestion(int Id)
         {
-            var qus = _context.questions.Find(Id);
-            if (User.IsInRole("Admin"))
-            {
-                if (qus.ImageUrl != "images/default-question.png")
-                {
-                    string pathImg = Path.Combine(_env.WebRootPath, qus.ImageUrl);
-                    if (System.IO.File.Exists(pathImg))
-                        System.IO.File.Delete(pathImg);
-                }
-                _context.Remove(qus);
-                _context.SaveChanges();
+            await _commandMediator.SendAsync(new DeleteQuestionCommand(
+                Id,
+                User.IsInRole("Admin"),
+                User.IsInRole("Editor")));
 
-            }
-            else if (User.IsInRole("Editor"))
-            {
-                qus.Status = QuestionStatus.PendingDelete;
-                _context.SaveChanges();
-            }
-            string returnUrl = Request.Headers["Referer"].ToString();
+            var returnUrl = Request.Headers["Referer"].ToString();
+
             if (!string.IsNullOrEmpty(returnUrl))
+            {
                 return Redirect(returnUrl);
+            }
 
-            // إذا لم يوجد Referer، اذهب للصفحة الافتراضية
-            //return RedirectToAction("ShowQuestions");
             return RedirectToAction("EditeQuestion");
         }
+
         [HttpGet]
-
-        public IActionResult QuickQuiz(int subjectId)
+        public async Task<IActionResult> QuickQuiz(int subjectId)
         {
-            var ids = _context.questions
-                .Where(q => q.SubjectId == subjectId)
-                .OrderBy(q => Guid.NewGuid())
-                .Take(10)
-                .Select(q => q.Id)
-                .ToList();
+            var model = await _queryMediator.QueryAsync(new StartQuickQuizQuery(subjectId));
 
-            var firstQuestion = _context.questions
-                .FirstOrDefault(q => q.Id == ids[0]);
-
-            var vm = new StepQuizVM
+            if (model is null)
             {
-                QuestionIds = ids,
-                CurrentIndex = 0,
-                Score = 0,
-                SubjectId = subjectId,
-                CurrentQuestion = firstQuestion
-            };
+                return RedirectToAction("Index");
+            }
 
-            return View("QuickQuiz", vm);
+            return View("QuickQuiz", model);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-
         public async Task<IActionResult> QuickQuiz(StepQuizVM model, string? Continue)
         {
-            var questionId = model.QuestionIds[model.CurrentIndex];
-            var question = _context.questions.FirstOrDefault(q => q.Id == questionId);
+            var user = await _userManager.GetUserAsync(User);
 
-            if (question == null)
+            if (user is null)
+            {
                 return NotFound();
-
-            model.CurrentQuestion = question;
-
-            // إذا ضغط المستخدم على زر متابعة بعد رؤية التلميح
-            if (!string.IsNullOrEmpty(Continue))
-            {
-                model.CurrentIndex++;
-                if (model.CurrentIndex >= model.QuestionIds.Count)
-                {
-                    var user = await _userManager.GetUserAsync(User);
-                    var result = new Result
-                    {
-                        UserId = user.Id,
-                        SubjectId = model.SubjectId,
-                        Score = model.Score,
-                        CreatedAt = DateTime.Now,
-                        Name = user.Name,
-                        UserName = user.UserName
-                    };
-                    _context.Add(result);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction("Result", new { score = model.Score });
-                }
-
-                model.CurrentQuestion = _context.questions.First(q => q.Id == model.QuestionIds[model.CurrentIndex]);
-                model.ShowHint = false; // إعادة تعيين التلميح
-                model.Hint = string.Empty;
-                model.SelectedAnswer = null;
-                return View(model);
             }
 
-            // تحقق من الإجابة
-            if (model.SelectedAnswer == question.CorrectAnswer)
-            {
-                model.Score += 10;
-                model.CurrentIndex++;
+            var result = await _commandMediator.SendAsync(new SubmitQuizStepCommand(
+                model,
+                !string.IsNullOrEmpty(Continue),
+                user.Id,
+                user.Name,
+                user.UserName ?? string.Empty));
 
-                if (model.CurrentIndex >= model.QuestionIds.Count)
-                {
-                    var user = await _userManager.GetUserAsync(User);
-                    var result = new Result
-                    {
-                        UserId = user.Id,
-                        SubjectId = model.SubjectId,
-                        Score = model.Score,
-                        CreatedAt = DateTime.Now,
-                        Name = user.Name,
-                        UserName = user.UserName
-                    };
-                    _context.Add(result);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction("Result", new { score = model.Score });
-                }
-
-                model.CurrentQuestion = _context.questions.First(q => q.Id == model.QuestionIds[model.CurrentIndex]);
-                model.ShowHint = false;
-                model.Hint = string.Empty;
-                model.SelectedAnswer = null;
-                return View(model);
-            }
-            else
+            if (result.CompletedScore.HasValue)
             {
-                // إجابة خاطئة → أوقف التقدم وأظهر التلميح
-                model.ShowHint = true;
-                model.Hint = question.Hint;
-                model.CurrentQuestion = question;
-                return View(model);
+                return RedirectToAction("Result", new { score = result.CompletedScore.Value });
             }
+
+            if (result.Model is null)
+            {
+                return NotFound();
+            }
+
+            return View(result.Model);
         }
+
         public IActionResult Result(int score)
         {
             ViewBag.Score = score;
             return View();
         }
+
         public async Task<IActionResult> EditeProfile()
         {
             var user = await _userManager.GetUserAsync(User);
-            ApplicationUser applicationUser = new ApplicationUser
+
+            var applicationUser = new ApplicationUser
             {
-                UserName = user.UserName,
-                Name = user.Name
+                UserName = user?.UserName,
+                Name = user?.Name ?? string.Empty
             };
 
             return View(applicationUser);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditeProfile(ApplicationUser applicationUser)
         {
             var user = await _userManager.GetUserAsync(User);
 
-            if (user == null)
+            if (user is null)
+            {
                 return NotFound();
+            }
 
-            // تحديث البيانات مباشرة
-            user.Name = applicationUser.Name;
-            // user.UserName = applicationUser.UserName; (إذا أردت)
+            var result = await _commandMediator.SendAsync(
+                new UpdateProfileCommand(user.Id, applicationUser.Name));
 
-            var result = await _userManager.UpdateAsync(user);
+            if (result.IsNotFound)
+            {
+                return NotFound();
+            }
 
             if (!result.Succeeded)
             {
                 foreach (var error in result.Errors)
                 {
-                    ModelState.AddModelError("", error.Description);
+                    ModelState.AddModelError("", error);
                 }
+
                 return View(applicationUser);
             }
-            else
-            {
-                TempData["SuccessMessage"] = "تم تحديث بياناتك بنجاح";
-            }
+
+            TempData["SuccessMessage"] = "تم تحديث بياناتك بنجاح";
 
             return View(user);
         }
 
+        private async Task SetSubjectsViewBagAsync(object? selectedValue = null)
+        {
+            var subjects = await _queryMediator.QueryAsync(new GetSubjectsQuery());
+
+            ViewBag.Subjects = new SelectList(subjects, "Id", "Name", selectedValue);
+        }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

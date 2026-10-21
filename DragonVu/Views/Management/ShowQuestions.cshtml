@@ -147,11 +147,11 @@
                         <!-- المادة -->
                         <div class="mb-3">
                             <label class="form-label">المادة</label>
-                            <select name="SubjectId" required
-                                    class="form-select"
-                                    asp-items="ViewBag.Subjects">
-                                <option value="@q.SubjectId">@q.Subject.Name</option>
-                            </select >
+                            <select name="SubjectId" required 
+                                class="form-select" 
+                                asp-items="ViewBag.Subjects">
+                                <option value="">-- اختر المادة --</option>
+                            </select>
                         </div>
                         @*text question*@
                         <div class="mb-3">

@@ -1,4 +1,4 @@
-namespace DragonVu.Models
+namespace DragonVu.Web.Models.Response
 {
     public class ErrorViewModel
     {

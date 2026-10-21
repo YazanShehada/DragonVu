@@ -9,7 +9,6 @@ namespace DragonVu.Models
         [Key]
         public int Id { get; set; }
 
-        // المادة
         [Required]
         public int SubjectId { get; set; }
         public Subject Subject { get; set; } = null!;
@@ -22,11 +21,9 @@ namespace DragonVu.Models
 
         public string UserName { get; set; } = null!;
 
-        // نوع الكويز
         [Required]
         public QuizType QuizType { get; set; }
 
-        // النتيجة
         [Range(0, int.MaxValue)]
         public int Score { get; set; }
 

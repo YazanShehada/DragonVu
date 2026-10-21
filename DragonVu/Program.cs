@@ -1,11 +1,11 @@
+using DragonVu.Application.Dependencies;
 using DragonVu.Data;
 using DragonVu.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
-//var connectionString = builder.Configuration.GetConnectionString("AppDbContextConnection") ?? throw new InvalidOperationException("Connection string 'AppDbContextConnection' not found."); ;
 
-//builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer("MyConnection"));
+// *********** remeber add caching for questions
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(
 builder.Configuration.GetConnectionString("MyConnection")));
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
@@ -14,25 +14,20 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     options.SignIn.RequireConfirmedEmail = false;
     options.SignIn.RequireConfirmedPhoneNumber = false;
     options.Lockout.AllowedForNewUsers = false;
-    // ÿÊ· ﬂ·„… «·„—Ê—
     options.Password.RequiredLength = 6;
-
-    // «·‘—Êÿ
-    options.Password.RequireDigit = false;          // —ﬁ„
-    options.Password.RequireUppercase = false;      // Õ—› ﬂ»Ì—
-    options.Password.RequireLowercase = false;       // Õ—› ’€Ì—
-    options.Password.RequireNonAlphanumeric = false; // —„“ Œ«’
-
-    // ⁄œœ «·„Õ«Ê·«  «·›«‘·… («Œ Ì«—Ì)
+    options.Password.RequireDigit = false;          
+    options.Password.RequireUppercase = false;      
+    options.Password.RequireLowercase = false;      
+    options.Password.RequireNonAlphanumeric = false; 
     options.Lockout.MaxFailedAccessAttempts = 20;
-
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<AppDbContext>();
 
-
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddApplication();
 
 var app = builder.Build();
 

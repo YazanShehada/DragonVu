@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.ComponentModel.DataAnnotations;
 
 namespace DragonVu.Models
@@ -11,13 +10,11 @@ namespace DragonVu.Models
 
         public int SubjectId { get; set; }
         [ValidateNever]
-        public Subject Subject { get; set; } = null!;
-        // رابط صورة السؤال
+        public Subject? Subject { get; set; }
 
         [ValidateNever]
         public string ImageUrl { get; set; } = "/images/default-question.png";
 
-        // رقم الإجابة الصحيحة (1 إلى 4)
         [Range(1, 4)]
         public int CorrectAnswer { get; set; }
 
@@ -34,16 +31,10 @@ namespace DragonVu.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-
-
-
-        // 🔹 حالة السؤال
         public QuestionStatus Status { get; set; } = QuestionStatus.PendingAdd;
 
-        // 🔹 من أنشأ السؤال
         public string? CreatedById { get; set; }
 
-        // 🔹 من وافق عليه
         public string? ApprovedById { get; set; }
 
         public DateTime? ApprovedAt { get; set; }

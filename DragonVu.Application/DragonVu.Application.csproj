@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LiteBus.Commands.Extensions.Microsoft.DependencyInjection" Version="6.0.2" />
+    <PackageReference Include="LiteBus.Queries.Extensions.Microsoft.DependencyInjection" Version="6.0.2" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="15.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DragonVu.Domain\DragonVu.Domain.csproj" />
+    <ProjectReference Include="..\DragonVu.Infrastructure\DragonVu.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

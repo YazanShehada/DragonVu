@@ -1,452 +1,269 @@
-﻿using DragonVu.Data;
+﻿using DragonVu.Application.Features.Questions.Command.ReviewQuestion;
+using DragonVu.Application.Features.Questions.Command.ReviewQuestionDeletion;
+using DragonVu.Application.Features.Questions.Command.UpdateQuestion;
+using DragonVu.Application.Features.Questions.Queries.GetApprovedQuestions;
+using DragonVu.Application.Features.Questions.Queries.GetPendingAddQuestions;
+using DragonVu.Application.Features.Questions.Queries.GetPendingDeleteQuestions;
+using DragonVu.Application.Features.Statistics.Queries.GetManagementDashboard;
+using DragonVu.Application.Features.Statistics.Queries.GetManageUsers;
+using DragonVu.Application.Features.Statistics.Queries.GetStatistics;
+using DragonVu.Application.Features.Subjects.Command.AddSubject;
+using DragonVu.Application.Features.Subjects.Command.DeleteSubject;
+using DragonVu.Application.Features.Subjects.Queries.GetSubjects;
+using DragonVu.Application.Features.Users.Command.AssignRole;
+using DragonVu.Application.Features.Users.Command.DeleteUser;
+using DragonVu.Application.Features.Users.Command.SetUserActive;
+using DragonVu.Application.Features.Users.Queries.GetUsersWithRoles;
 using DragonVu.Models;
+using LiteBus.Commands.Abstractions;
+using LiteBus.Queries.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Webp;
-using SixLabors.ImageSharp.Processing;
-using System.Data;
 
 namespace DragonVu.Controllers
 {
     [Authorize(Roles = "Admin,Editor")]
     public class ManagementController : Controller
     {
-        public ManagementController(AppDbContext context,
-                            UserManager<ApplicationUser> userManager,
-                            RoleManager<IdentityRole> roleManager,
-                            IWebHostEnvironment env)
-        {
-            _context = context;
-            _userManager = userManager;
-            _roleManager = roleManager;
-            _env = env;
-        }
-        readonly AppDbContext _context;
-        readonly UserManager<ApplicationUser> _userManager;
-        readonly RoleManager<IdentityRole> _roleManager;
-        readonly IWebHostEnvironment _env;
+        private readonly ICommandMediator _commandMediator;
+        private readonly IQueryMediator _queryMediator;
+        private readonly UserManager<ApplicationUser> _userManager;
 
+        public ManagementController(
+            ICommandMediator commandMediator,
+            IQueryMediator queryMediator,
+            UserManager<ApplicationUser> userManager)
+        {
+            _commandMediator = commandMediator;
+            _queryMediator = queryMediator;
+            _userManager = userManager;
+        }
 
         [Authorize(Roles = "Admin,Editor")]
         public IActionResult Index()
         {
             return View();
         }
+
         [Authorize(Roles = "Admin")]
-        public IActionResult Manage()
+        public async Task<IActionResult> Manage()
         {
+            var dashboard = await _queryMediator.QueryAsync(new GetManagementDashboardQuery());
 
-            ViewBag.NewQuestions = _context.questions
-                .Count(q => q.Status == QuestionStatus.PendingAdd);
+            ViewBag.NewQuestions = dashboard.NewQuestions;
+            ViewBag.DeleteRequests = dashboard.DeleteRequests;
+            ViewBag.ApprovedQuestions = dashboard.ApprovedQuestions;
+            ViewBag.SubjectsCount = dashboard.SubjectsCount;
+            ViewBag.UsersCount = dashboard.UsersCount.ToString();
 
-            ViewBag.DeleteRequests = _context.questions
-                .Count(q => q.Status == QuestionStatus.PendingDelete);
-
-            ViewBag.ApprovedQuestions = _context.questions
-                .Count(q => q.Status == QuestionStatus.Approved);
-
-            ViewBag.SubjectsCount = _context.Set<Subject>().Count();
-
-            //ViewBag.UsersCount = _userManager.Users.Count();
-            var users = _userManager.Users.ToList();
-            int reault = 0; // Fix: Initialize the variable before use
-            foreach (var user in users)
-            {
-                var roles = _userManager.GetRolesAsync(user).Result;
-                if (!roles.Contains("User"))
-                {
-                    reault += 1;
-                    ViewBag.UsersCount = reault.ToString();
-                }
-            }
             return View();
         }
+
         public async Task<IActionResult> AddRoles()
         {
-            var users = _userManager.Users.ToList();
-
-            var data = new List<dynamic>();
-
-            foreach (var user in users)
-            {
-                var roles = await _userManager.GetRolesAsync(user);
-                if (!roles.Contains("User"))
-                {
-                    data.Add(new
-                    {
-                        Username = user.UserName,
-                        Role = roles.FirstOrDefault() ?? "لا يوجد"
-                    });
-                }
-
-            }
-
-            ViewBag.UsersWithRoles = data;
+            await SetUsersWithRolesViewBagAsync();
 
             return View();
         }
-
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddRoles(string? dummy = null)
         {
-            // جلب القيم من الفورم
-            var username = Request.Form["Username"].ToString(); // استخدم اسم المستخدم بدل Id
+            var username = Request.Form["Username"].ToString();
             var role = Request.Form["Role"].ToString();
 
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(role))
-            {
-                TempData["ErrorMessage"] = "اسم المستخدم أو الدور فارغ!";
-                return View("AddRoles");
-            }
-
-            // البحث عن المستخدم بالاسم
-            var user = await _userManager.FindByNameAsync(username);
-            if (user == null)
-            {
-                TempData["ErrorMessage"] = "المستخدم غير موجود!";
-                return View("AddRoles");
-            }
-
-            // التأكد من وجود الدور
-            if (!await _roleManager.RoleExistsAsync(role))
-            {
-                TempData["ErrorMessage"] = "الدور غير موجود!";
-                return View("AddRoles");
-            }
-
-            // إزالة كل الأدوار القديمة
-            var currentRoles = await _userManager.GetRolesAsync(user);
-            await _userManager.RemoveFromRolesAsync(user, currentRoles);
-
-            // إضافة الدور الجديد
-            var result = await _userManager.AddToRoleAsync(user, role);
+            var result = await _commandMediator.SendAsync(new AssignRoleCommand(username, role));
 
             if (result.Succeeded)
             {
-                TempData["SuccessMessage"] = $"تم تعيين الدور '{role}' للمستخدم '{username}' بنجاح ✅";
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "حدث خطأ أثناء تعيين الدور!";
+                TempData["SuccessMessage"] = result.Message;
+                return RedirectToAction("AddRoles");
             }
 
-            return RedirectToAction("AddRoles");
+            TempData["ErrorMessage"] = result.Message;
+            await SetUsersWithRolesViewBagAsync();
+
+            return View("AddRoles");
         }
-
-
 
         [HttpGet]
-        public IActionResult AddSubjects()
+        public async Task<IActionResult> AddSubjects()
         {
-            ViewBag.Subjects = _context.Set<Subject>().ToList();
+            ViewBag.Subjects = await _queryMediator.QueryAsync(new GetSubjectsQuery());
+
             return View();
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddSubjects(Subject subject)
+        public async Task<IActionResult> AddSubjects(Subject subject)
         {
-            if (ModelState.IsValid)
-            {
-                if (subject.Id > 0)
-                {
-                    subject.CreatedAt = DateTime.Now;
-                    _context.Update(subject);
-                }
-                else
-                {
-                    subject.CreatedAt = DateTime.Now;
-                    _context.Add(subject);
-                }
-
-                _context.SaveChanges();
-                string folderPath = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot/images/Questions/subjects",
-                 subject.Id.ToString()
-                  );
-
-                if (!Directory.Exists(folderPath))
-                {
-                    Directory.CreateDirectory(folderPath);
-                }
-                return RedirectToAction("AddSubjects");
-
-            }
-            else
+            if (!ModelState.IsValid)
             {
                 return View(subject);
             }
 
-        }
-
-        public IActionResult DeleteSubject()
-        {
-            ViewBag.Subjects = _context.Set<Subject>().ToList();
-            return View();
-        }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult DeleteSubject(int id)
-        {
-            var subject = _context.Set<Subject>().Find(id);
-            if (subject != null)
-            {
-                _context.Set<Subject>().Remove(subject);
-                _context.SaveChanges();
-            }
+            await _commandMediator.SendAsync(
+                new AddSubjectCommand(subject.Id, subject.Name, subject.Year));
 
             return RedirectToAction("AddSubjects");
         }
-        public IActionResult AproveQuestions()
+
+        public async Task<IActionResult> DeleteSubject()
         {
-            var pendingQuestions = _context.questions
-            .Where(q => q.Status == QuestionStatus.PendingAdd)
-            .ToList();
+            ViewBag.Subjects = await _queryMediator.QueryAsync(new GetSubjectsQuery());
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteSubject(int id)
+        {
+            await _commandMediator.SendAsync(new DeleteSubjectCommand(id));
+
+            return RedirectToAction("AddSubjects");
+        }
+
+        public async Task<IActionResult> AproveQuestions()
+        {
+            var pendingQuestions = await _queryMediator.QueryAsync(new GetPendingAddQuestionsQuery());
 
             return View(pendingQuestions);
-            //return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AproveQuestions(int QuestionId, string actionType)
         {
-            var qus = _context.questions.Find(QuestionId);
-
-            if (qus != null)
+            if (actionType is "approve" or "reject")
             {
-                if (actionType == "approve")
-                {
-                    qus.Status = QuestionStatus.Approved;
-                    _context.Update(qus);
-                    await _context.SaveChangesAsync();
-                }
-                else if (actionType == "reject")
-                {
-                    qus.Status = QuestionStatus.Rejected;
-                    _context.Update(qus);
-                    await _context.SaveChangesAsync();
-                }
+                await _commandMediator.SendAsync(
+                    new ReviewQuestionCommand(QuestionId, actionType == "approve"));
             }
+
             return RedirectToAction("AproveQuestions");
         }
 
-        public IActionResult DeleteRequests()
+        public async Task<IActionResult> DeleteRequests()
         {
-            var pendingDeleteQuestions = _context.questions
-            .Where(q => q.Status == QuestionStatus.PendingDelete)
-            .ToList();
+            var pendingDeleteQuestions = await _queryMediator.QueryAsync(new GetPendingDeleteQuestionsQuery());
+
             return View(pendingDeleteQuestions);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteRequests(int QuestionId, string actionType)
         {
-            var qus = _context.questions.Find(QuestionId);
-            if (qus != null)
+            if (actionType is "approve" or "reject")
             {
-                if (actionType == "approve")
-                {
-                    _context.questions.Remove(qus);
-                    string pathImg = Path.Combine(_env.WebRootPath, qus.ImageUrl);
-                    System.IO.File.Delete(pathImg);
-                    await _context.SaveChangesAsync();
-                }
-                else if (actionType == "reject")
-                {
-                    qus.Status = QuestionStatus.Approved;
-                    _context.Update(qus);
-                    await _context.SaveChangesAsync();
-                }
+                await _commandMediator.SendAsync(
+                    new ReviewQuestionDeletionCommand(QuestionId, actionType == "approve"));
             }
+
             return RedirectToAction("DeleteRequests");
         }
-        public IActionResult ShowQuestions(int? SubjectId)
+
+        public async Task<IActionResult> ShowQuestions(int? SubjectId)
         {
-            var subjects = _context.subjects.ToList();
+            var subjects = await _queryMediator.QueryAsync(new GetSubjectsQuery());
 
-            ViewBag.Subjects = new SelectList(
-                subjects,
-                "Id",
-                "Name",
-                SubjectId // حتى يبقى المختار محدد
-            );
+            ViewBag.Subjects = new SelectList(subjects, "Id", "Name", SubjectId);
 
-            var questions = _context.questions
-                .Where(q => q.Status == QuestionStatus.Approved);
+            var questions = await _queryMediator.QueryAsync(new GetApprovedQuestionsQuery(SubjectId));
 
-            // إذا تم اختيار مادة
-            if (SubjectId.HasValue)
-            {
-                questions = questions.Where(q => q.SubjectId == SubjectId.Value);
-            }
-
-            return View(questions.ToList());
+            return View(questions);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-
         public async Task<IActionResult> ShowQuestions(
-        int Id,
-        int SubjectId,
-        int CorrectAnswer,
-        string? Text,
-        string? AnswerA,
-        string? AnswerB,
-        string? AnswerC,
-        string? AnswerD,
-        string? Hint,
-        IFormFile? QuestionImage)
+            int Id,
+            int SubjectId,
+            int CorrectAnswer,
+            string? Text,
+            string? AnswerA,
+            string? AnswerB,
+            string? AnswerC,
+            string? AnswerD,
+            string? Hint,
+            IFormFile? QuestionImage)
         {
-            var userId = _userManager.GetUserId(User);
+            var result = await _commandMediator.SendAsync(new UpdateQuestionCommand(
+                Id,
+                _userManager.GetUserId(User)!,
+                User.IsInRole("Editor"),
+                SubjectId,
+                CorrectAnswer,
+                Text,
+                AnswerA,
+                AnswerB,
+                AnswerC,
+                AnswerD,
+                Hint,
+                QuestionImage));
 
-            var question = _context.questions
-                .FirstOrDefault(q => q.Id == Id && q.CreatedById == userId);
-
-            if (question == null)
-                return NotFound();
-
-            if (SubjectId != 0)
-                question.SubjectId = SubjectId;
-
-            question.AnswerA = AnswerA;
-            question.AnswerB = AnswerB;
-            question.AnswerC = AnswerC;
-            question.AnswerD = AnswerD;
-            question.CorrectAnswer = CorrectAnswer;
-            question.Hint = Hint;
-            question.Text = Text;
-
-            // ===== تحديث الصورة إذا تم رفع صورة جديدة =====
-            if (QuestionImage != null && QuestionImage.Length > 0)
+            if (result.IsNotFound)
             {
-                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-                var extension = Path.GetExtension(QuestionImage.FileName).ToLower();
-
-                if (!allowedExtensions.Contains(extension))
-                {
-                    ModelState.AddModelError("", "Invalid image format");
-                    return RedirectToAction("EditeQuestion");
-                }
-
-                string folderPath = Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "wwwroot/images/Questions/subjects",
-                    question.SubjectId.ToString()
-                );
-
-                if (!Directory.Exists(folderPath))
-                    Directory.CreateDirectory(folderPath);
-
-                // اسم جديد مع WebP
-                string fileName = Guid.NewGuid().ToString() + ".webp";
-                string filePath = Path.Combine(folderPath, fileName);
-                // ✅ تحويل + ضغط + resize
-                using (var image = await Image.LoadAsync(QuestionImage.OpenReadStream()))
-                {
-                    // Resize إذا أكبر من 1000px
-                    image.Mutate(x => x.Resize(new ResizeOptions
-                    {
-                        Mode = ResizeMode.Max,
-                        Size = new Size(1000, 1000)
-                    }));
-
-                    var encoder = new WebpEncoder
-                    {
-                        Quality = 75 // ضغط مناسب
-                    };
-
-                    await image.SaveAsync(filePath, encoder);
-                }
-
-                // حذف الصورة القديمة (احترافي)
-                if (!string.IsNullOrEmpty(question.ImageUrl))
-                {
-                    var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", question.ImageUrl);
-                    if (System.IO.File.Exists(oldPath))
-                        System.IO.File.Delete(oldPath);
-                }
-
-                question.ImageUrl = $"images/Questions/subjects/{question.SubjectId}/{fileName}";
+                return NotFound();
             }
 
-            // ===== لو كان Editor نرجع الحالة للمراجعة =====
-            if (User.IsInRole("Editor"))
-                question.Status = QuestionStatus.PendingAdd;
-
-            await _context.SaveChangesAsync();
+            if (!result.Succeeded)
+            {
+                ModelState.AddModelError("", result.Error ?? "Invalid image format");
+                return RedirectToAction("ShowQuestions");
+            }
 
             TempData["SuccessMessage"] = "تم تعديل السؤال بنجاح ✅";
             TempData["UpdatedQuestionId"] = Id;
 
             return RedirectToAction("ShowQuestions");
         }
+
         [Authorize(Roles = "Admin")]
-        public IActionResult StatisticsPage()
+        public async Task<IActionResult> StatisticsPage()
         {
-            List<Result> results = _context.results
-                .Include(r => r.User)
-                .Include(r => r.Subject)
-                .ToList();
-            var statistics = new StatisticsVM
-            {
-                results = results,
-                allUsers = _userManager.Users.ToList(),
-                UserCount = _userManager.Users.Count(),
-                latestUsers = _userManager.Users.OrderByDescending(u => u.CreatedAt).Take(5).ToList()
-            };
-            return View(statistics);
-        }
-        public IActionResult ManageUsers()
-        {
-            List<Result> results = _context.results
-              .Include(r => r.User)
-              .Include(r => r.Subject)
-              .ToList();
-            var statistics = new StatisticsVM
-            {
-
-                allUsers = _userManager.Users.ToList(),
-
-            };
+            var statistics = await _queryMediator.QueryAsync(new GetStatisticsQuery());
 
             return View(statistics);
         }
+
+        public async Task<IActionResult> ManageUsers()
+        {
+            var statistics = await _queryMediator.QueryAsync(new GetManageUsersQuery());
+
+            return View(statistics);
+        }
+
         [HttpPost]
-        public IActionResult ManageUsers(string id, string action)
+        public async Task<IActionResult> ManageUsers(string id, string action)
         {
-            var user = _context.Users.Find(id);
-
-            if (user == null)
-                return RedirectToAction("StatisticsPage");
-
             switch (action)
             {
                 case "Activate":
-                    user.IsActive = true;
+                    await _commandMediator.SendAsync(new SetUserActiveCommand(id, true));
                     break;
 
                 case "Deactivate":
-                    user.IsActive = false;
+                    await _commandMediator.SendAsync(new SetUserActiveCommand(id, false));
                     break;
 
                 case "Delete":
-                    _context.Users.Remove(user);
+                    await _commandMediator.SendAsync(new DeleteUserCommand(id));
                     break;
             }
 
-            _context.SaveChanges();
-
             return RedirectToAction("StatisticsPage");
+        }
+
+        private async Task SetUsersWithRolesViewBagAsync()
+        {
+            ViewBag.UsersWithRoles = await _queryMediator.QueryAsync(new GetUsersWithRolesQuery());
         }
     }
 }
-
-

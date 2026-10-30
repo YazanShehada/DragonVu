@@ -175,7 +175,7 @@
             <div class="d-flex flex-column bg-body-secondary  sidebar" id="sidebar">
                 <ul class="nav nav-pills flex-column">
                     <li class="nav-item active">
-                                <a class="nav-link active py-3 border-bottom rounded-0 cursor-pointer" href="@Url.Action("Index" , "Quiz")">
+                                <a class="nav-link active py-3 border-bottom rounded-0 cursor-pointer" href="@Url.Action("StartQuiz", "Home")">
                             <i class="bi bi-house"></i>
                             <span>الصفحة الرئيسية</span>
                         </a>                     
@@ -187,9 +187,9 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                                <a class="nav-link  py-3 border-bottom rounded-0 cursor-pointer" data-bs-toggle="tab" data-bs-target="" >
+                                <a class="nav-link  py-3 border-bottom rounded-0 cursor-pointer" href="@Url.Action("LeaderBoard", "Home")" >
                             <i class="bi bi-clipboard2-data"></i>
-                            <span>لوحة المعلومات</span>
+                            <span>لوحة الشرف</span>
                         </a>        
                     </li>
                     <li class="nav-item" id="mobileProfileBtn">

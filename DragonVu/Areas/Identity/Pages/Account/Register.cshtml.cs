@@ -145,7 +145,7 @@ namespace DragonVu.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
 
-            returnUrl ??= returnUrl ??= Url.Action("Index", "Quiz", new { area = "" });
+            returnUrl ??= returnUrl ??= Url.Action("StartQuiz", "Home", new { area = "" });
             LoadCountryCodes();
 
 

@@ -34,14 +34,7 @@ namespace DragonVu.Controllers
             _userManager = userManager;
         }
 
-        public async Task<IActionResult> Index()
-        {
-            var subjects = await _queryMediator.QueryAsync(new GetSubjectsQuery());
-
-            ViewBag.Subjects = new SelectList(subjects, "Id", "Name");
-
-            return View();
-        }
+        
 
         [Authorize(Roles = "Admin,Editor")]
         public async Task<IActionResult> AddQuestion()

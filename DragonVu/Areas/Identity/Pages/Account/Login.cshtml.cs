@@ -195,7 +195,7 @@ namespace DragonVu.Areas.Identity.Pages.Account
 
 
 
-            returnUrl ??= Url.Action("Index", "Quiz", new { area = "" });
+            returnUrl ??= Url.Action("StartQuiz", "Home", new { area = "" });
 
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 

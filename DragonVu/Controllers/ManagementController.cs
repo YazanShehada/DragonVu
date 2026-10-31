@@ -225,10 +225,12 @@ namespace DragonVu.Controllers
             return RedirectToAction("ShowQuestions");
         }
 
+        [HttpGet("pageNumber")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> StatisticsPage()
+        public async Task<IActionResult> StatisticsPage(int pageNumber = 1)
         {
-            var statistics = await _queryMediator.QueryAsync(new GetStatisticsQuery());
+
+            var statistics = await _queryMediator.QueryAsync(new GetStatisticsQuery(pageNumber));
 
             return View(statistics);
         }

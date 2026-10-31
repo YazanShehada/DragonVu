@@ -37,8 +37,9 @@ public sealed class GetManagementDashboardQueryHandler
         var subjectsCount = await _context.subjects.CountAsync(cancellationToken);
 
         var users = await _userManager.Users.ToListAsync(cancellationToken);
+        //var usersCount = await _userManager.Users..CountAsync(); 
         var staffCount = 0;
-
+        // try to opmize this
         foreach (var user in users)
         {
             var roles = await _userManager.GetRolesAsync(user);

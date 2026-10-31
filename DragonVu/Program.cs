@@ -15,10 +15,10 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     options.SignIn.RequireConfirmedPhoneNumber = false;
     options.Lockout.AllowedForNewUsers = false;
     options.Password.RequiredLength = 6;
-    options.Password.RequireDigit = false;          
-    options.Password.RequireUppercase = false;      
-    options.Password.RequireLowercase = false;      
-    options.Password.RequireNonAlphanumeric = false; 
+    options.Password.RequireDigit = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
     options.Lockout.MaxFailedAccessAttempts = 20;
 })
 .AddRoles<IdentityRole>()

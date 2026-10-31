@@ -32,22 +32,19 @@
                                 <!-- Activate / Deactivate -->
                                 @if (user.IsActive)
                                 {
-                                    <button type="submit" name="action" value="Deactivate"
-                                            class="btn btn-success btn-sm">
+                                    <button type="submit" name="action" value="Deactivate" class="btn btn-success btn-sm">
                                         مدفوع
                                     </button>
                                 }
                                 else
                                 {
-                                    <button type="submit" name="action" value="Activate"
-                                            class="btn btn-warning btn-sm">
+                                    <button type="submit" name="action" value="Activate" class="btn btn-warning btn-sm">
                                         عادي
                                     </button>
                                 }
 
                                 <!-- Delete -->
-                                <button type="submit" name="action" value="Delete"
-                                        class="btn btn-danger btn-sm"
+                                <button type="submit" name="action" value="Delete" class="btn btn-danger btn-sm"
                                         onclick="return confirm('Are you sure?');">
                                     حذف
                                 </button>
@@ -56,8 +53,21 @@
 
                         </li>
                     }
+                   
                 </ul>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <a class="btn btn-sm btn-outline-primary @(Model.PageNumber > 1 ? "" : "disabled")"
+                       asp-action="StatisticsPage" asp-route-pageNumber="@(Model.PageNumber - 1)">
+                        السابق
+                    </a>
+    
+                    <span class="text-muted small">صفحة @Model.PageNumber من @Model.TotalPagesNumber</span>
 
+                    <a class="btn btn-sm btn-outline-primary @(Model.PageNumber < Model.TotalPagesNumber ? "" : "disabled")"
+                       asp-action="StatisticsPage" asp-route-pageNumber="@(Model.PageNumber + 1)">
+                        التالي
+                    </a>
+                </div>
             </div>
         </div>
 

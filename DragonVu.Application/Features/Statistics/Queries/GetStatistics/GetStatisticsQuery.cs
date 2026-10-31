@@ -3,4 +3,4 @@ using LiteBus.Queries.Abstractions;
 
 namespace DragonVu.Application.Features.Statistics.Queries.GetStatistics;
 
-public sealed record GetStatisticsQuery : IQuery<StatisticsVM>;
+public sealed record GetStatisticsQuery(int pageNumber) : IQuery<StatisticsVM>;

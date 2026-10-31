@@ -25,12 +25,23 @@ public sealed class GetStatisticsQueryHandler
         GetStatisticsQuery query,
         CancellationToken cancellationToken = default)
     {
+        // keep dev here 
+        int pageSize = 10;
+
+        int pageNumber = query.pageNumber < 1 ? 1 : query.pageNumber;
+
         var results = await _context.results
             .Include(r => r.User)
             .Include(r => r.Subject)
             .ToListAsync(cancellationToken);
 
-        var users = await _userManager.Users.ToListAsync(cancellationToken);
+        var totalUsersCount = await _userManager.Users.CountAsync(cancellationToken);
+
+        var users = await _userManager.Users.OrderBy(u => u.CreatedAt)
+        .Skip((pageNumber - 1) * pageSize)
+        .Take(pageSize).ToListAsync(cancellationToken);
+
+
 
         var latestUsers = await _userManager.Users
             .OrderByDescending(u => u.CreatedAt)
@@ -41,7 +52,9 @@ public sealed class GetStatisticsQueryHandler
         {
             results = results,
             allUsers = users,
-            UserCount = users.Count,
+            UserCount = totalUsersCount,
+            PageNumber = pageNumber,
+            TotalPagesNumber = (int)Math.Ceiling(totalUsersCount / (double)pageSize),
             latestUsers = latestUsers
         };
     }

@@ -10,6 +10,7 @@ using DragonVu.Application.Features.Statistics.Queries.GetStatistics;
 using DragonVu.Application.Features.Subjects.Command.AddSubject;
 using DragonVu.Application.Features.Subjects.Command.DeleteSubject;
 using DragonVu.Application.Features.Subjects.Queries.GetSubjects;
+using DragonVu.Application.Features.Users.Command.AdminResetPassword;
 using DragonVu.Application.Features.Users.Command.AssignRole;
 using DragonVu.Application.Features.Users.Command.DeleteUser;
 using DragonVu.Application.Features.Users.Command.SetUserActive;
@@ -266,6 +267,23 @@ namespace DragonVu.Controllers
         private async Task SetUsersWithRolesViewBagAsync()
         {
             ViewBag.UsersWithRoles = await _queryMediator.QueryAsync(new GetUsersWithRolesQuery());
+        }
+
+        public async Task<IActionResult> AdminResetPassword()
+        {
+            return View();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminResetPassword(string userName, string newPassword)
+        {
+            var command = new AdminResetPasswordCommand(userName, newPassword);
+            var result = await _commandMediator.SendAsync(command);
+            if (result == true)
+                TempData["SuccessMessage"] = "تم تغيير كلمة المرور بنجاح";
+            else if (result == false)
+                TempData["ErrorMessage"] = "حدث مشكلة اثناء تغيير كلمة المرور";
+            return View();
         }
     }
 }

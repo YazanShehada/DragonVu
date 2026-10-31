@@ -15,10 +15,10 @@ namespace DragonVu.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IQueryMediator _queryMediator;
-        
+
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public HomeController(ILogger<HomeController> logger, IQueryMediator queryMediator , UserManager<ApplicationUser> userManager)
+        public HomeController(ILogger<HomeController> logger, IQueryMediator queryMediator, UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
             _queryMediator = queryMediator;
@@ -51,11 +51,11 @@ namespace DragonVu.Controllers
         [Authorize]
         public async Task<IActionResult> leaderboard()
         {
-            
+
 
             var leaderBoard = await _queryMediator.QueryAsync(new GetLeaderboardQuery());
 
-          
+
             return View(leaderBoard);
         }
 
